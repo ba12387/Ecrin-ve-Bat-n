@@ -1,29 +1,668 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="tr" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ecrin ve Batın</title>
+    <title>Bizim Dünyamız ❤️</title>
+    <!-- Chart.js Grafikler İçin -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide İkonlar -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
+        :root {
+            --bg-color: #FAF7F2;
+            --card-bg: rgba(255, 255, 255, 0.75);
+            --text-color: #4A3E3D;
+            --text-muted: #8C7A78;
+            --accent-pink: #E8A598;
+            --accent-pink-soft: #FADCD5;
+            --accent-study: #A8C3A8;
+            --accent-study-soft: #E2EFE2;
+            --border-color: rgba(232, 165, 152, 0.2);
+            --shadow: 0 8px 32px 0 rgba(140, 122, 120, 0.1);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #1A1615;
+            --card-bg: rgba(35, 30, 29, 0.75);
+            --text-color: #F3ECE7;
+            --text-muted: #A89B99;
+            --accent-pink: #E8A598;
+            --accent-pink-soft: #4A302B;
+            --accent-study: #7A9A7A;
+            --accent-study-soft: #2B3D2B;
+            --border-color: rgba(238, 222, 218, 0.1);
+            --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding-bottom: 80px;
+            max-width: 480px;
+            margin: 0 auto;
+            min-height: 100vh;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+        }
+
+        /* Glassmorphism Genellikler */
+        .glass {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+        }
+
+        /* Hero / Giriş Ekranı */
+        #splash-screen {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 1000;
+            background: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=800&q=80') center/cover no-repeat;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 40px 20px;
+            transition: opacity 0.5s ease, visibility 0.5s;
+        }
+
+        #splash-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .splash-title {
+            color: white;
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .btn-continue {
+            background: var(--accent-pink);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 16px;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(232, 165, 152, 0.4);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        /* Header & Üst Bar */
+        header {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title { font-size: 1.4rem; font-weight: 700; }
+        .theme-toggle {
+            background: none; border: none; cursor: pointer;
+            color: var(--text-color);
+        }
+
+        /* Sayfalar */
+        .page { display: none; padding: 0 20px 20px; animation: fadeIn 0.4s ease; }
+        .page.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Kart Yapısı */
+        .card {
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .card-header h2 { font-size: 1.2rem; font-weight: 600; }
+
+        /* Sayılar / Big Metrics */
+        .metric-box {
             text-align: center;
-            padding: 50px;
+            padding: 20px 0;
         }
-        h1 {
-            color: #333;
+
+        .metric-value {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--accent-pink);
+            line-height: 1;
         }
-        p {
-            color: #666;
-            font-size: 18px;
+
+        .metric-value.study { color: var(--accent-study); }
+        .metric-label { font-size: 0.9rem; color: var(--text-muted); margin-top: 5px; }
+
+        /* Form Elemanları */
+        .input-group {
+            margin-bottom: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
         }
+        .input-group label { font-size: 0.85rem; color: var(--text-muted); }
+        .input-group input {
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-color);
+            color: var(--text-color);
+            font-size: 1rem;
+        }
+
+        .btn-small {
+            background: var(--accent-pink);
+            color: white; border: none;
+            padding: 10px; border-radius: 12px;
+            font-weight: 600; cursor: pointer;
+        }
+
+        /* Tavsiyeler & Liste */
+        .tips-list { list-style: none; margin-top: 10px; }
+        .tips-list li {
+            padding: 8px 12px;
+            background: var(--accent-pink-soft);
+            margin-bottom: 6px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        .quote-box {
+            font-style: italic;
+            text-align: center;
+            padding: 12px;
+            background: var(--accent-study-soft);
+            border-radius: 12px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+        }
+
+        /* Anılar / Galeri */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .memory-card {
+            overflow: hidden;
+            border-radius: 16px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+        }
+
+        .memory-card img {
+            width: 100%; height: 120px;
+            object-fit: cover;
+        }
+
+        .memory-info { padding: 10px; }
+        .memory-info span { font-size: 0.75rem; color: var(--text-muted); display: block; }
+        .memory-info p { font-size: 0.85rem; font-weight: 600; margin-top: 2px; }
+
+        /* Alt Navigasyon Bar */
+        nav {
+            position: fixed;
+            bottom: 0; left: 50%;
+            transform: translateX(-50%);
+            width: 100%; max-width: 480px;
+            background: var(--card-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex; flex-direction: column;
+            align-items: center; gap: 4px;
+            background: none; border: none;
+            color: var(--text-muted);
+            font-size: 0.75rem; cursor: pointer;
+            width: 25%;
+        }
+
+        .nav-item.active { color: var(--accent-pink); font-weight: 600; }
     </style>
 </head>
 <body>
-    <h1>Ecrin ve Batın Uygulamasına Hoş Geldiniz!</h1>
-    <p>Web sitemiz yakında yayında olacaktır.</p>
+
+    <!-- Splash / Giriş Ekranı -->
+    <div id="splash-screen">
+        <h1 class="splash-title">Bizim Dünyamız ❤️</h1>
+        <button class="btn-continue" onclick="closeSplash()">Devam Et</button>
+    </div>
+
+    <!-- Header -->
+    <header>
+        <span class="header-title">Bizim Dünyamız</span>
+        <button class="theme-toggle" onclick="toggleTheme()">
+            <i data-lucide="moon" id="theme-icon"></i>
+        </button>
+    </header>
+
+    <!-- 1. ANA SAYFA -->
+    <main id="page-home" class="page active">
+        <!-- Dashboard Kart 1: Regl -->
+        <div class="card glass" onclick="switchTab('regl')">
+            <div class="card-header">
+                <i data-lucide="heart" style="color: var(--accent-pink);"></i>
+                <h2>Regl Takibi</h2>
+            </div>
+            <div class="metric-box">
+                <div class="metric-value" id="dash-period-val">--</div>
+                <div class="metric-label" id="dash-period-label">Hesaplanıyor...</div>
+            </div>
+        </div>
+
+        <!-- Dashboard Kart 2: YKS Ders -->
+        <div class="card glass" onclick="switchTab('ders')">
+            <div class="card-header">
+                <i data-lucide="book-open" style="color: var(--accent-study);"></i>
+                <h2>YKS Hazırlık</h2>
+            </div>
+            <div class="metric-box">
+                <div class="metric-value study" id="dash-yks-val">--</div>
+                <div class="metric-label">Sınava Kalan Gün</div>
+            </div>
+        </div>
+
+        <!-- Dashboard Kart 3: Anılar -->
+        <div class="card glass" onclick="switchTab('anilar')">
+            <div class="card-header">
+                <i data-lucide="image" style="color: var(--accent-pink);"></i>
+                <h2>Anılarımız</h2>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-muted); text-align: center; margin: 10px 0;">
+                En güzel anlarımıza göz atmak için dokun...
+            </p>
+        </div>
+    </main>
+
+    <!-- 2. REGL TAKİBİ SAYFASI -->
+    <div id="page-regl" class="page">
+        <div class="card glass">
+            <div class="card-header">
+                <i data-lucide="heart" style="color: var(--accent-pink);"></i>
+                <h2>Döngü Durumu</h2>
+            </div>
+            <div class="metric-box">
+                <div class="metric-value" id="period-status-val">--</div>
+                <div class="metric-label" id="period-status-label">--</div>
+            </div>
+            <div class="quote-box" id="period-quote">"Her zaman yanındayım."</div>
+        </div>
+
+        <!-- Ayarlar -->
+        <div class="card glass">
+            <h3>Döngü Ayarları</h3>
+            <div class="input-group" style="margin-top: 10px;">
+                <label>Son Regl Tarihi</label>
+                <input type="date" id="input-last-date">
+            </div>
+            <div class="input-group">
+                <label>Ortalama Döngü (Gün)</label>
+                <input type="number" id="input-cycle-len" value="28">
+            </div>
+            <button class="btn-small" style="width: 100%;" onclick="savePeriodData()">Kaydet</button>
+        </div>
+
+        <!-- Günlük Öneriler -->
+        <div class="card glass">
+            <h3>Günün Önerileri 🌸</h3>
+            <ul class="tips-list">
+                <li><i data-lucide="droplet" size="16"></i> Bol su içmeyi unutma.</li>
+                <li><i data-lucide="coffee" size="16"></i> Dinlenmeye zaman ayır.</li>
+                <li><i data-lucide="apple" size="16"></i> Magnezyum içeren besinler tüket.</li>
+                <li><i data-lucide="footprints" size="16"></i> Hafif yürüyüş yapabilirsin.</li>
+                <li><i data-lucide="flame" size="16"></i> Sıcak su torbası rahatlatabilir.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 3. DERS ÇALIŞMA SAYFASI -->
+    <div id="page-ders" class="page">
+        <div class="card glass">
+            <div class="quote-box" id="study-quote">Küçük adımlar büyük başarılar getirir.</div>
+            <div class="metric-box">
+                <div class="metric-value study" id="yks-countdown">--</div>
+                <div class="metric-label">YKS'ye Kalan Gün</div>
+            </div>
+        </div>
+
+        <!-- Çalışma Gir -->
+        <div class="card glass">
+            <h3>Bugünkü Çalışma</h3>
+            <div class="input-group" style="margin-top: 10px;">
+                <label>Çalışılan Süre (Saat)</label>
+                <input type="number" id="input-study-hours" step="0.5" placeholder="Örn: 4.5">
+            </div>
+            <div class="input-group">
+                <label>Günlük Hedef (Saat)</label>
+                <input type="number" id="input-target-hours" value="6">
+            </div>
+            <button class="btn-small" style="width: 100%; background: var(--accent-study);" onclick="saveStudyData()">Çalışmayı Ekle</button>
+        </div>
+
+        <!-- Özet & Grafik -->
+        <div class="card glass">
+            <h3>Haftalık İlerleme</h3>
+            <canvas id="studyChart" style="margin-top: 15px; width: 100%; height: 180px;"></canvas>
+            <div style="margin-top: 15px; display: flex; justify-content: space-between; font-size: 0.85rem;">
+                <span>Haftalık Toplam: <b id="weekly-total">0</b> saat</span>
+                <span>Başarı: <b id="success-rate">%0</b></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. ANILAR SAYFASI -->
+    <div id="page-anilar" class="page">
+        <blockquote class="glass" style="padding: 15px; border-left: 4px solid var(--accent-pink); font-size: 0.85rem; margin-bottom: 20px;">
+            Moralin bozuk olduğunda buraya gel. Güzel anılarımız sana her zaman gülümsemeyi hatırlatsın. ❤️
+        </blockquote>
+
+        <!-- Fotoğraf Ekleme Formu -->
+        <div class="card glass">
+            <h3>Yeni Anı Ekle</h3>
+            <div class="input-group" style="margin-top: 10px;">
+                <label>Görsel URL</label>
+                <input type="text" id="input-img-url" placeholder="https://...">
+            </div>
+            <div class="input-group">
+                <label>Not / Açıklama</label>
+                <input type="text" id="input-img-note" placeholder="O gün harikaydı...">
+            </div>
+            <div class="input-group">
+                <label>Tarih</label>
+                <input type="date" id="input-img-date">
+            </div>
+            <button class="btn-small" style="width: 100%;" onclick="addMemory()">Anıyı Kaydet</button>
+        </div>
+
+        <!-- Galeri Grid -->
+        <div class="gallery-grid" id="gallery-grid">
+            <!-- Dinamik Eklenecek -->
+        </div>
+    </div>
+
+    <!-- ALT MENÜ -->
+    <nav>
+        <button class="nav-item active" onclick="switchTab('home')">
+            <i data-lucide="home"></i>
+            <span>Ana Sayfa</span>
+        </button>
+        <button class="nav-item" onclick="switchTab('regl')">
+            <i data-lucide="heart"></i>
+            <span>Regl</span>
+        </button>
+        <button class="nav-item" onclick="switchTab('ders')">
+            <i data-lucide="book-open"></i>
+            <span>Ders</span>
+        </button>
+        <button class="nav-item" onclick="switchTab('anilar')">
+            <i data-lucide="image"></i>
+            <span>Anılar</span>
+        </button>
+    </nav>
+
+    <script>
+        // İkonları Başlat
+        lucide.createIcons();
+
+        // 1. SPLASH SCREEN & TEMALAR
+        function closeSplash() {
+            document.getElementById('splash-screen').classList.add('hidden');
+        }
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const current = html.getAttribute('data-theme');
+            const target = current === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', target);
+            document.getElementById('theme-icon').setAttribute('data-lucide', target === 'dark' ? 'sun' : 'moon');
+            lucide.createIcons();
+        }
+
+        // TAB GEÇİŞLERİ
+        function switchTab(tabId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+            document.getElementById(`page-${tabId}`).classList.add('active');
+            
+            // Tab highlight
+            const navs = ['home', 'regl', 'ders', 'anilar'];
+            const idx = navs.indexOf(tabId);
+            if(idx !== -1) document.querySelectorAll('.nav-item')[idx].classList.add('active');
+
+            if(tabId === 'ders') renderChart();
+        }
+
+        // 2. REGL HESAPLAMA LOGIC
+        const periodQuotes = [
+            "Bugün kendine ekstra nazik davran.",
+            "Dinlenmek en büyük hakkın, kahveni al ve keyfine bak.",
+            "Seni her halinle çok seviyorum ❤️",
+            "Bugün biraz çikolata iyi gelebilir!"
+        ];
+
+        function savePeriodData() {
+            const date = document.getElementById('input-last-date').value;
+            const len = document.getElementById('input-cycle-len').value;
+            if(!date) return alert("Lütfen tarih seçin!");
+
+            localStorage.setItem('period_date', date);
+            localStorage.setItem('period_len', len);
+            updatePeriodUI();
+            alert("Kaydedildi!");
+        }
+
+        function updatePeriodUI() {
+            const lastDateStr = localStorage.getItem('period_date');
+            const cycleLen = parseInt(localStorage.getItem('period_len') || 28);
+
+            if(!lastDateStr) {
+                document.getElementById('dash-period-val').innerText = "?";
+                document.getElementById('dash-period-label').innerText = "Tarih Girilmedi";
+                return;
+            }
+
+            const lastDate = new Date(lastDateStr);
+            const today = new Date();
+            
+            // Gün farkı hesapla
+            const diffTime = Math.abs(today - lastDate);
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+            let statusText = "";
+            let daysText = "";
+
+            if(diffDays <= 5) {
+                statusText = `Regl Döneminde`;
+                daysText = `Bugün ${diffDays + 1}. gün`;
+            } else {
+                const nextPeriodDays = cycleLen - (diffDays % cycleLen);
+                statusText = `${nextPeriodDays} Gün`;
+                daysText = `Sonraki regle kalan süre`;
+            }
+
+            document.getElementById('dash-period-val').innerText = statusText;
+            document.getElementById('dash-period-label').innerText = daysText;
+            document.getElementById('period-status-val').innerText = statusText;
+            document.getElementById('period-status-label').innerText = daysText;
+
+            // Rastgele Motivasyon
+            const randomQuote = periodQuotes[Math.floor(Math.random() * periodQuotes.length)];
+            document.getElementById('period-quote').innerText = `"${randomQuote}"`;
+        }
+
+        // 3. YKS DERS TAKİBİ LOGIC
+        const studyQuotes = [
+            "Bugün çalışırsan gelecekte kendine teşekkür edeceksin.",
+            "Küçük adımlar büyük başarılar getirir.",
+            "Vazgeçme, harika gidiyorsun!",
+            "İnancın başarmaktan geçer."
+        ];
+
+        function updateYKSCountdown() {
+            // YKS Tarihi Yaklaşık Tahmin (Örn: 20 Haziran)
+            const targetDate = new Date('2025-06-21'); 
+            const today = new Date();
+            const diffDays = Math.ceil((targetDate - today) / (1000 * 60 * 60 * 24));
+
+            const days = diffDays > 0 ? diffDays : 0;
+            document.getElementById('dash-yks-val').innerText = days;
+            document.getElementById('yks-countdown').innerText = days;
+
+            document.getElementById('study-quote').innerText = studyQuotes[Math.floor(Math.random() * studyQuotes.length)];
+        }
+
+        function saveStudyData() {
+            const hours = parseFloat(document.getElementById('input-study-hours').value);
+            const target = parseFloat(document.getElementById('input-target-hours').value) || 6;
+
+            if(isNaN(hours)) return alert("Lütfen geçerli bir saat girin!");
+
+            let studyLogs = JSON.parse(localStorage.getItem('study_logs') || "[]");
+            studyLogs.push({ date: new Date().toLocaleDateString('tr-TR'), hours: hours });
+            
+            // Son 7 kaydı tut
+            if(studyLogs.length > 7) studyLogs.shift();
+            
+            localStorage.setItem('study_logs', JSON.stringify(studyLogs));
+            localStorage.setItem('study_target', target);
+
+            renderChart();
+            alert("Çalışma eklendi!");
+        }
+
+        let myChart = null;
+        function renderChart() {
+            const logs = JSON.parse(localStorage.getItem('study_logs') || "[]");
+            const target = parseFloat(localStorage.getItem('study_target') || 6);
+
+            const labels = logs.length ? logs.map(l => l.date.slice(0,5)) : ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+            const data = logs.length ? logs.map(l => l.hours) : [0,0,0,0,0,0,0];
+
+            const total = data.reduce((a, b) => a + b, 0);
+            const successRate = Math.min(100, Math.round((total / (target * 7)) * 100));
+
+            document.getElementById('weekly-total').innerText = total;
+            document.getElementById('success-rate').innerText = `%${successRate}`;
+
+            const ctx = document.getElementById('studyChart').getContext('2d');
+            if(myChart) myChart.destroy();
+
+            myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Çalışma (Saat)',
+                        data: data,
+                        backgroundColor: '#A8C3A8',
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        // 4. ANILAR LOGIC
+        const defaultMemories = [
+            { url: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=400&q=80', note: 'İlk Sahil Yürüyüşümüz', date: '2023-10-12' },
+            { url: 'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=400&q=80', note: 'Birlikte İlk Kahve', date: '2023-11-05' }
+        ];
+
+        function loadMemories() {
+            let memories = JSON.parse(localStorage.getItem('memories'));
+            if(!memories) {
+                memories = defaultMemories;
+                localStorage.setItem('memories', JSON.stringify(memories));
+            }
+
+            const grid = document.getElementById('gallery-grid');
+            grid.innerHTML = '';
+
+            memories.forEach(m => {
+                grid.innerHTML += `
+                    <div class="memory-card glass">
+                        <img src="${m.url}" alt="Anı" onerror="this.src='https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=400&q=80'">
+                        <div class="memory-info">
+                            <span>${m.date}</span>
+                            <p>${m.note}</p>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function addMemory() {
+            const url = document.getElementById('input-img-url').value;
+            const note = document.getElementById('input-img-note').value;
+            const date = document.getElementById('input-img-date').value;
+
+            if(!url || !note) return alert("Lütfen resim linki ve not girin!");
+
+            let memories = JSON.parse(localStorage.getItem('memories') || "[]");
+            memories.unshift({ url, note, date: date || new Date().toISOString().split('T')[0] });
+            localStorage.setItem('memories', JSON.stringify(memories));
+
+            document.getElementById('input-img-url').value = '';
+            document.getElementById('input-img-note').value = '';
+
+            loadMemories();
+            alert("Anı eklendi!");
+        }
+
+        // Uygulama Başlatma
+        window.onload = () => {
+            updatePeriodUI();
+            updateYKSCountdown();
+            loadMemories();
+        };
+    </script>
 </body>
 </html>
-
- 
